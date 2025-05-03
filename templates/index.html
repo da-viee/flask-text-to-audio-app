@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Audio Converter</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Optional: Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        :root {
+            --bs-primary-rgb: 13, 110, 253; /* Define Bootstrap primary color RGB */
+            --bs-body-bg: #f4f5f7; /* Lighter gray background */
+            --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            --control-bg: #ffffff; /* White background for controls */
+            --border-color: #dee2e6;
+            --border-radius: 8px; /* Use consistent border radius */
+            --text-muted: #6c757d;
+        }
+
+        body {
+            background-color: var(--bs-body-bg);
+            padding-top: 2rem;
+            padding-bottom: 3rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* System fonts */
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 760px; /* Max width for content */
+        }
+
+        .card {
+            border: none; /* Remove default card border */
+            box-shadow: var(--card-shadow);
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+            background-color: #fff; /* Ensure card background */
+        }
+        .card-header {
+             background-color: #e9ecef; /* Light background for header */
+             /* background-color: rgba(var(--bs-primary-rgb), 0.05); */
+             border-bottom: 1px solid var(--border-color);
+             font-weight: 600;
+             font-size: 1.1rem;
+             padding: 1rem 1.5rem;
+             border-top-left-radius: var(--border-radius);
+             border-top-right-radius: var(--border-radius);
+        }
+         .card-body {
+             padding: 1.5rem;
+         }
+
+        h1 {
+            margin-bottom: 2rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Form Styling */
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        .form-control, .form-select, .form-range {
+            border-radius: var(--border-radius);
+            border-color: var(--border-color);
+            background-color: var(--control-bg);
+        }
+        .form-control:focus, .form-select:focus {
+             border-color: #86b7fe;
+             box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+             outline: none;
+        }
+        textarea.form-control { min-height: 150px; }
+        select.form-select { padding: 0.6rem 0.75rem; } /* Adjust select padding */
+
+        /* Custom File Input Styling */
+        .file-name-display {
+             border-top-left-radius: 0;
+             border-bottom-left-radius: 0;
+             border-left: 0;
+             background-color: #e9ecef;
+             font-size: 0.9em;
+             color: var(--text-muted);
+             padding: 0.57rem 0.75rem;
+             line-height: 1.5;
+             /* Ensure it takes up remaining space */
+             position: relative;
+             flex: 1 1 auto;
+             width: 1%;
+             min-width: 0;
+             border: 1px solid var(--border-color); /* Add full border back */
+             border-left: 0; /* Remove left border again */
+             border-top-right-radius: var(--border-radius);
+             border-bottom-right-radius: var(--border-radius);
+        }
+         .input-group > .btn { /* Style button part of input group */
+              border-top-right-radius: 0;
+              border-bottom-right-radius: 0;
+         }
+         /* Hide actual file input accessibly */
+         .visually-hidden {
+              position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important;
+         }
+
+        .or-divider { text-align: center; margin: 1.5rem 0; font-weight: 500; color: #adb5bd; }
+        .or-divider::before, .or-divider::after { content: ""; display: inline-block; width: 30%; height: 1px; background-color: var(--border-color); vertical-align: middle; margin: 0 10px; }
+
+        /* Control Group Styling (for sliders) */
+        .control-group {
+             margin-bottom: 1.5rem;
+             padding: 1rem 1.5rem;
+             background-color: #f8f9fa;
+             border: 1px solid var(--border-color);
+             border-radius: var(--border-radius);
+        }
+        .control-group label {
+            display: block; /* Label on top */
+            margin-bottom: 0.75rem;
+        }
+        .slider-value {
+             font-weight: 600;
+             color: var(--bs-primary); /* Bootstrap primary */
+             margin-left: 0.5rem;
+             min-width: 50px;
+             display: inline-block;
+             text-align: right;
+        }
+        .form-range { padding-left: 0; padding-right: 0;}
+        .control-group small.form-text { text-align: center; margin-top: 0.5rem; }
+
+        /* Loader */
+        #loader { display: none; } /* Hidden by default */
+        .spinner-border { vertical-align: -0.125em; } /* Align spinner better */
+
+         /* Output Area */
+         #output-section { margin-top: 2rem; }
+         /* #audio_output card style already defined */
+         #audio_output h2 { margin-top: 0; margin-bottom: 1.25rem; font-size: 1.2rem; font-weight: 600; }
+         .download-link-wrapper { margin-top: 1.5rem; text-align: center;}
+         .download-link-wrapper .btn { font-weight: 500; }
+         audio { border-radius: 6px; max-width: 100%; display: block; margin-left: auto; margin-right: auto; } /* Centered audio player */
+
+         /* Adjust button margins */
+         .btn-primary { margin-top: 1.5rem; } /* Primary submit button */
+
+         /* Flash message improvements */
+         .alert i { vertical-align: -0.125em; /* Align icons better */}
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="text-center mb-4"><i class="bi bi-soundwave me-2"></i>Text to Audio Converter</h1>
+
+        <!-- Output Section -->
+        <div id="output-section">
+            <!-- Flash Messages Area -->
+            <div id="flash-messages">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            {% set alert_class = 'alert-info' %} {# Default #}
+                            {% if category == 'error' %}{% set alert_class = 'alert-danger' %}
+                            {% elif category == 'warning' %}{% set alert_class = 'alert-warning' %}
+                            {% elif category == 'success' %}{% set alert_class = 'alert-success' %}
+                            {% endif %}
+                            <div class="alert {{ alert_class }} alert-dismissible fade show" role="alert">
+                                <i class="bi {% if category == 'error' %}bi-exclamation-triangle-fill{% elif category == 'warning' %}bi-exclamation-triangle-fill{% elif category == 'success' %}bi-check-circle-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+             <!-- Audio Result Area (Wrap in card for consistent look) -->
+             {# Conditionally hide the entire card if no audio_filename is passed #}
+             <div id="audio_output" class="card" {% if not audio_filename %}style="display: none;"{% endif %}>
+                 <div class="card-header">Result</div>
+                 <div class="card-body">
+                     <div id="audio-player-area">
+                         {# Server-side rendering of player IF audio_filename exists #}
+                         {% if audio_filename %}
+                            <p class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Audio ready:</p>
+                            <audio controls preload="metadata" class="mb-3 w-100"> {# Added w-100 #}
+                                <source src="{{ url_for('serve_audio', filename=audio_filename) }}?v={{ range(1, 1000) | random }}" type="audio/{{ audio_filename.rsplit('.', 1)[-1].lower() }}">
+                                Your browser does not support the audio element.
+                            </audio>
+                            <div class="download-link-wrapper">
+                                <a href="{{ url_for('serve_audio', filename=audio_filename) }}" download class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-download me-1"></i> Download Audio ({{ audio_filename }})
+                                </a>
+                            </div>
+                         {% else %}
+                            {# This part is only rendered if audio_filename is missing, #}
+                            {# but the parent card is hidden anyway by the style attribute #}
+                            {# <p id="default-message" class="text-muted">Results will appear here.</p> #}
+                         {% endif %}
+                     </div>
+                 </div>
+             </div>
+        </div>
+
+
+        <!-- Input Form Card -->
+         <div class="card">
+             <div class="card-header">Input & Settings</div>
+             <div class="card-body">
+                <form id="tts-form" method="POST" action="{{ url_for('process_text_route') }}" enctype="multipart/form-data" class="needs-validation" novalidate>
+
+                    <!-- Text Input Area -->
+                     <div class="mb-3">
+                        <label for="text_input" class="form-label">1. Enter text:</label>
+                        <textarea class="form-control" id="text_input" name="text_input" placeholder="Type or paste text here..." rows="5">{{ text_input or request.form.get('text_input', '') }}</textarea>
+                        {# Removed required from here, JS will check text OR pdf #}
+                        <div class="invalid-feedback"> Please enter some text OR upload a PDF. </div>
+                     </div>
+
+                    <div class="or-divider">OR</div>
+
+                    <!-- PDF File Input -->
+                     <div class="mb-4">
+                         <label for="pdf_file_actual" class="form-label">1. Upload PDF Document:</label>
+                         <div class="input-group">
+                              {# This label triggers the hidden input #}
+                              <label for="pdf_file_actual" class="btn btn-outline-secondary file-input-label-btn">Choose PDF</label>
+                              {# This span displays the chosen filename #}
+                              <span id="pdf-file-name-display" class="form-control file-name-display text-truncate">No file chosen</span>
+                              {# Actual hidden input field #}
+                              <input class="visually-hidden" type="file" id="pdf_file_actual" name="pdf_file" accept=".pdf">
+                         </div>
+                          {% if not pdf_enabled %}
+                             <small class="text-muted d-block mt-1">PDF processing disabled on server.</small>
+                          {% endif %}
+                     </div>
+
+                    <hr class="my-4">
+
+                    <!-- Voice Selection Dropdown -->
+                     <div class="mb-3">
+                        <label for="voice" class="form-label">2. Select Voice:</label>
+                        <select class="form-select" id="voice" name="voice">
+                            {% set current_selection = selected_voice_key or default_voice_key %}
+                            {% for display_name, file_key in available_voices.items() %}
+                                <option value="{{ display_name }}" {% if display_name == current_selection %}selected{% endif %}>
+                                    {{ display_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                     </div>
+
+                     <!-- Speed Control -->
+                     <div class="control-group">
+                         <label for="speed" class="form-label">3. Speech Speed: <span id="speed-value" class="slider-value">{{ "{:.1f}".format(default_speed | default(1.0)) }}x</span></label>
+                         <input type="range" class="form-range" id="speed" name="speed" min="0.5" max="1.5" step="0.1" value="{{ default_speed | default(1.0) }}">
+                         <small class="form-text text-center">(Slower <i class="bi bi-arrow-left-right"></i> Faster)</small>
+                    </div>
+
+                     <hr class="my-4">
+
+                    <!-- Background Music File Input -->
+                     <div class="mb-3">
+                         <label for="bg_music_input_actual" class="form-label">4. Upload Background Music (Optional):</label>
+                          <div class="input-group">
+                              <label for="bg_music_input_actual" class="btn btn-outline-secondary file-input-label-btn">Choose Audio</label>
+                              <span id="file-name-display" class="form-control file-name-display text-truncate">No file chosen</span>
+                              <input class="visually-hidden" type="file" id="bg_music_input_actual" name="bg_music_file" accept=".mp3,.wav,.ogg,.flac,.aac,.m4a">
+                         </div>
+                     </div>
+
+                    <!-- Background Music Volume Control -->
+                     <div class="control-group">
+                         <label for="bg_volume" class="form-label">5. Background Volume: <span id="bg-volume-value" class="slider-value">{{ default_bg_volume | default(-12) }} dB</span></label>
+                         <input type="range" class="form-range" id="bg_volume" name="bg_volume" min="-40" max="0" step="1" value="{{ default_bg_volume | default(-12) }}">
+                         <small class="form-text text-center">(Quieter <i class="bi bi-arrow-left-right"></i> Louder)</small>
+                    </div>
+
+                    <button type="submit" id="submit-button" class="btn btn-primary btn-lg w-100 mt-4">
+                        <i class="bi bi-soundwave me-1"></i> Convert to Audio
+                    </button>
+                </form>
+             </div>
+         </div>
+
+
+        <!-- Loading Indicator -->
+        <div id="loader" class="mt-4 card card-body text-center">
+             <div class="spinner-border text-primary me-2" role="status">
+                 <span class="visually-hidden">Loading...</span>
+             </div>
+             Processing... Please wait.
+        </div>
+
+    </div> <!-- /container -->
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // Wrap all JS in a DOMContentLoaded listener for safety
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Get references to elements
+            const ttsForm = document.getElementById('tts-form');
+            const submitButton = document.getElementById('submit-button');
+            const loader = document.getElementById('loader');
+            const outputSection = document.getElementById('output-section');
+            const flashMessagesDiv = document.getElementById('flash-messages');
+            const audioOutputDiv = document.getElementById('audio_output');
+            const audioPlayerArea = document.getElementById('audio-player-area');
+            const pdfInputActual = document.getElementById('pdf_file_actual');
+            const pdfFileNameDisplay = document.getElementById('pdf-file-name-display');
+            const bgFileInputActual = document.getElementById('bg_music_input_actual');
+            const bgFileNameDisplay = document.getElementById('file-name-display');
+            const volumeSlider = document.getElementById('bg_volume');
+            const volumeValueDisplay = document.getElementById('bg-volume-value');
+            const speedSlider = document.getElementById('speed');
+            const speedValueDisplay = document.getElementById('speed-value');
+
+             // Function to update filename display
+             function updateFileName(inputElement, displayElement) {
+                 if (inputElement && displayElement) {
+                     displayElement.textContent = inputElement.files.length > 0 ? inputElement.files[0].name : 'No file chosen';
+                 }
+             }
+
+            // PDF File Input Display
+            if (pdfInputActual) {
+                 pdfInputActual.addEventListener('change', () => updateFileName(pdfInputActual, pdfFileNameDisplay));
+            }
+            // Background File Input Display
+             if (bgFileInputActual) {
+                  bgFileInputActual.addEventListener('change', () => updateFileName(bgFileInputActual, bgFileNameDisplay));
+             }
+             // Volume Slider Value Display
+             if (volumeSlider && volumeValueDisplay) {
+                 function updateVolumeDisplay() { if(volumeValueDisplay) volumeValueDisplay.textContent = `${volumeSlider.value} dB`; }
+                 volumeSlider.addEventListener('input', updateVolumeDisplay);
+                 // updateVolumeDisplay(); // Initial value set by server render
+             }
+             // Speed Slider Value Display
+             if (speedSlider && speedValueDisplay) {
+                 function updateSpeedDisplay() { if(speedValueDisplay) speedValueDisplay.textContent = `${parseFloat(speedSlider.value).toFixed(1)}x`; }
+                 speedSlider.addEventListener('input', updateSpeedDisplay);
+                 // updateSpeedDisplay(); // Initial value set by server render
+             }
+
+
+            // Form Submission Loader
+            if (ttsForm && submitButton && loader) {
+                ttsForm.addEventListener('submit', function(event) {
+                    // Client-side validation: Ensure either text OR PDF is provided
+                    const textInput = document.getElementById('text_input');
+                    const pdfInput = document.getElementById('pdf_file_actual');
+                    const hasText = textInput && textInput.value.trim() !== '';
+                    const hasPdf = pdfInput && pdfInput.files.length > 0;
+
+                    if (!hasText && !hasPdf) {
+                        alert('Please enter text OR upload a PDF file to convert.');
+                        event.preventDefault(); // Stop submission
+                        event.stopPropagation();
+                        ttsForm.classList.add('was-validated'); // Show potential Bootstrap styles if needed
+                        return;
+                    }
+
+                    // Hide previous results/flashes if submission is valid
+                    if (flashMessagesDiv) flashMessagesDiv.innerHTML = '';
+                    if (audioOutputDiv) {
+                         audioOutputDiv.style.display = 'none';
+                         if(audioPlayerArea) audioPlayerArea.innerHTML = ''; // Clear previous player content
+                    }
+
+                    // Show loader and disable button
+                    loader.style.display = 'block';
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+                });
+            }
+
+             // Show Results/Flashes on Page Load
+             // This logic runs after the page (re)loads
+             // Check if the server rendered the player inside #audio-player-area
+             const audioPlayer = audioPlayerArea ? audioPlayerArea.querySelector('audio') : null;
+             const hasFlash = flashMessagesDiv && flashMessagesDiv.children.length > 0;
+
+             // Re-enable button and hide loader (handles back navigation or errors before JS runs)
+             if (submitButton) {
+                  submitButton.disabled = false;
+                  submitButton.innerHTML = '<i class="bi bi-soundwave me-1"></i> Convert to Audio';
+             }
+             if (loader) {
+                  loader.style.display = 'none';
+             }
+
+             if (audioPlayer) {
+                  // If server rendered the player, make sure the container card is visible
+                  console.log("Audio player found, showing results card."); // Debug
+                  if (audioOutputDiv) audioOutputDiv.style.display = 'block';
+             } else {
+                  // If no player was rendered, keep the container card hidden
+                  // Flash messages are displayed independently above
+                  console.log("No audio player found, keeping results card hidden."); // Debug
+                  if (audioOutputDiv) audioOutputDiv.style.display = 'none';
+             }
+
+            // Bootstrap 5 Form Validation Trigger (from Bootstrap docs)
+            (() => {
+              'use strict'
+              const forms = document.querySelectorAll('.needs-validation')
+              Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                  if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                  }
+                  form.classList.add('was-validated')
+                }, false)
+              })
+            })()
+
+        }); // End DOMContentLoaded listener
+    </script>
+
+</body>
+</html>

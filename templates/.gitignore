@@ -1,0 +1,45 @@
+# Virtual environment
+venv/
+*/venv/
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Generated audio files (in static/audio)
+static/audio/speech_*.wav
+static/audio/mixed_*.mp3
+
+# Uploaded temporary files
+uploads/bg_*.mp3
+uploads/bg_*.wav
+uploads/bg_*.ogg
+uploads/bg_*.flac
+uploads/bg_*.aac
+uploads/bg_*.m4a
+uploads/doc_*.pdf
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Secrets (if any were ever created, though we didn't use .env)
+.env
+*.json # Be careful not to ignore essential JSON config if you have it
+# If your Piper voices .json file is essential, make this more specific
+# e.g., !piper/voices/*.onnx.json
+
+# Log files (optional, if you add file logging)
+*.log
